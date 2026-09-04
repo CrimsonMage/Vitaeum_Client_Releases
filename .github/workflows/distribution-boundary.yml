@@ -1,0 +1,20 @@
+name: Distribution boundary
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  no-private-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject Rust workspaces and source archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden="$(find . -path ./.git -prune -o -type f \( -name '*.rs' -o -name Cargo.toml -o -name Cargo.lock -o -iname '*source*.zip' -o -iname '*source*.tar.gz' -o -iname '*source*.tar.zst' \) -print)"
+          test -z "$forbidden" || { printf 'Forbidden source material:\n%s\n' "$forbidden"; exit 1; }
